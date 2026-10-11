@@ -1,0 +1,35 @@
+bazel_dep(name = "rules_multitool", version = "1.11.1")
+bazel_dep(name = "bazel_env.bzl", version = "0.7.2")
+bazel_dep(name = "bazelrc-preset.bzl", version = "1.9.2")
+
+# buildifier (Starlark formatter) is always available — the `aspect buildifier`
+# task and the format.alias in .aspect/config.axl use it regardless of lint.
+bazel_dep(name = "buildifier_prebuilt", version = "8.5.1.2")
+
+# Prebuilt aspect gazelle binary (no Go toolchain needed) — provides
+# //tools/gazelle:gazelle, the default target for `aspect gazelle`.
+bazel_dep(name = "aspect_gazelle_prebuilt", version = "0.0.20")
+
+# NB: 2.7.0's sarif_parser toolchain is missing the linux_amd64 platform key
+# (breaks lint/format on Linux CI: "key sarif_parser-linux_amd64 not found").
+# Stay on 2.6.0 until that's fixed upstream.
+bazel_dep(name = "aspect_rules_lint", version = "2.7.1")
+
+# bazel_skylib's native_binary backs //tools/lint's linter wrappers.
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "rules_shell", version = "0.8.0")
+
+# go preset uses rules_go directly; the lint preset needs this floor too because
+# aspect_rules_lint -> rules_buf transitively pulls an ancient rules_go (0.42.0)
+# whose cgo.bzl references the removed CcInfo symbol and fails to load.
+bazel_dep(name = "rules_go", version = "0.61.1")
+
+###############################################################################
+# Module extensions
+###############################################################################
+
+multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
+multitool.hub(lockfile = "//tools:tools.lock.json")
+use_repo(multitool, "multitool")
+
+register_toolchains("//bazel/toolchains:all")

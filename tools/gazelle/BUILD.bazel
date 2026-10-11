@@ -1,0 +1,23 @@
+load("@aspect_gazelle_prebuilt//:def.bzl", "aspect_gazelle")
+
+# The default target for `aspect gazelle`. Uses the prebuilt aspect gazelle
+# binary, so no Go toolchain is needed to generate BUILD files. Languages and
+# Orion extensions are enabled to match the languages selected for this project.
+aspect_gazelle(
+    name = "gazelle",
+
+    # Aspect Orion extensions (Starlark BUILD generators) shipped in .aspect/gazelle.
+    extensions = [
+        "//.aspect/gazelle:shell.axl",
+    ],
+    languages = [
+        # Always on: keeps proto + visibility metadata in sync.
+        "proto",
+        "visibility_extension",
+
+        # Kotlin (like Java/Scala) ships hand-written BUILD files — its sample
+        # uses kt_jvm_* + JUnit jars gazelle can't resolve, and the kotlin
+        # extension generates kt_jvm_library targets that collide with the
+        # hand-written ones (incl. //tools/gazelle). So gazelle skips Kotlin.
+    ],
+)
